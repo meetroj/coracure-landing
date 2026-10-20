@@ -213,6 +213,7 @@ const CATEGORY_ROUTES = new Set(Object.keys(DIRECTORY))
 function match(pathname) {
   const [a, b, c] = pathname.replace(/\/+$/, '').slice(1).split('/')
   if (!a) return [Home, {}]
+  if (a === 'open') return [OpenInApp, {}]
   if (c) return null
   if (a === 'consultations' && !b) return [Consultations, {}]
   if (a === 'providers' && b) return [Profile, { slug: b }]
@@ -221,6 +222,21 @@ function match(pathname) {
   if (a === 'lab-tests') return b ? [LabDetail, { slug: b }] : [LabTests, {}]
   if (CATEGORY_ROUTES.has(a)) return [Listing, { group: a, slug: b }]
   return null
+}
+
+// A shared app link (/open/...) that reached the website. With the app installed Android opens it there and never
+// shows this; without it, this offers the same link through the app's own scheme, and the download.
+// ponytail: no automatic redirect to coracure:// (desktop browsers show an error); add a store link via LINKS.playStore.
+function OpenInApp() {
+  usePageTitle('Open in the CoraCure app')
+  const rest = useUrl().pathname.replace(/^\/open\/?/, '')
+  return (
+    <Page bg="profile" title="Open in the app">
+      <EmptyState title="Open this in the CoraCure app" action={<Button href={`coracure://open/${rest}`}>Open in app</Button>}>
+        Don't have the app yet? <Link href={APP}>Get the app</Link>, then tap the link again.
+      </EmptyState>
+    </Page>
+  )
 }
 
 function NotFound() {
