@@ -17,9 +17,15 @@ addEventListener('popstate', () => {
 })
 const snapshot = () => location.pathname + location.search + location.hash
 
+// history.state.i = how many in-app steps this entry is from the one the visit started on (0 = nothing earlier on this site)
+const depth = () => history.state?.i ?? 0
+if (history.state?.i === undefined) history.replaceState({ i: 0 }, '')
+export const canGoBack = () => depth() > 0
+
 export function navigate(to, { replace = false } = {}) {
   lastNav = replace ? 'replace' : 'push'
-  history[replace ? 'replaceState' : 'pushState'](null, '', to)
+  const i = replace ? depth() : depth() + 1
+  history[replace ? 'replaceState' : 'pushState']({ i }, '', to)
   emit()
 }
 

@@ -88,21 +88,16 @@ export function Header() {
           <img className="logo-dark" src={logoWhite} alt="" aria-hidden="true" width="192" height="48" />
         </Link>
         <nav id="main-nav" className={`nav${open ? ' open' : ''}`} aria-label="Main">
-          {/* signed in: the public links (Home, Consultations, Lab Tests...) are gone; the account menu on the left is the navigation */}
-          {!signedIn && (
-            <>
-            <MaybeLink href="/" onClick={close} aria-current={section === 'home' ? 'page' : undefined}>Home</MaybeLink>
-            <MaybeLink href={LINKS.about}>About Us</MaybeLink>
-            <details className="nav-dd">
-              <summary aria-current={section === 'consult' ? 'page' : undefined}>Consultations <ChevronDown size={16} aria-hidden="true" /></summary>
-              <ul>
-                {CONSULT_MENU.map(([label, href]) => <li key={label}><MaybeLink href={href} onClick={close}>{label}</MaybeLink></li>)}
-              </ul>
-            </details>
-            <MaybeLink href={LINKS.labTests} onClick={close} aria-current={section === 'lab' ? 'page' : undefined}>Lab Tests</MaybeLink>
-            <MaybeLink href={LINKS.careers}>Careers</MaybeLink>
-            </>
-          )}
+          <MaybeLink href="/" onClick={close} aria-current={section === 'home' ? 'page' : undefined}>Home</MaybeLink>
+          <MaybeLink href={LINKS.about}>About Us</MaybeLink>
+          <details className="nav-dd">
+            <summary aria-current={section === 'consult' ? 'page' : undefined}>Consultations <ChevronDown size={16} aria-hidden="true" /></summary>
+            <ul>
+              {CONSULT_MENU.map(([label, href]) => <li key={label}><MaybeLink href={href} onClick={close}>{label}</MaybeLink></li>)}
+            </ul>
+          </details>
+          <MaybeLink href={LINKS.labTests} onClick={close} aria-current={section === 'lab' ? 'page' : undefined}>Lab Tests</MaybeLink>
+          <MaybeLink href={LINKS.careers}>Careers</MaybeLink>
           {/* phones: the header is too narrow for these, so they live in the menu */}
           <div className="nav-actions">
             {signedIn ? (

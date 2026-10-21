@@ -14,7 +14,7 @@ export function readPrefs() {
   }
 }
 
-const dark = (m) => m === 'dark' || (m === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+const dark = (m) => m === 'dark' // System Default is Light
 export function applyPrefs(p) {
   document.documentElement.dataset.theme = dark(p.theme) ? 'dark' : 'light'
   document.documentElement.lang = p.lang
@@ -27,4 +27,3 @@ export function savePrefs(p) {
 }
 
 applyPrefs(readPrefs())
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyPrefs(readPrefs()))

@@ -7,7 +7,7 @@ import { MaybeLink } from './layout.jsx'
 import { StatusBadge } from './forms.jsx'
 import { listServices } from '../account.js'
 import { loginHref, signupHref, useSession } from '../auth.js'
-import { Link, useUrl } from '../router.jsx'
+import { Link, canGoBack, useUrl } from '../router.jsx'
 import { LINKS } from '../site.js'
 
 /* The signed-in area's shell (dashboard, profile, health records): the account navigation on the right on desktop,
@@ -62,7 +62,12 @@ export function LoginPrompt({ what = 'this' }) {
 export function AreaPage({ bg, title, back, children }) {
   const { signedIn } = useSession()
   // back = [href, label]: a way out of a page that was opened from another one (the breadcrumb trail is hidden here)
-  const top = back && <Link href={back[0]} className="back-link"><ArrowLeft size={18} aria-hidden="true" />{back[1]}</Link>
+  // goes back to the page this one was opened from; the fixed parent is only the fallback (a link opened in a new tab)
+  const top = back && (
+    <Link href={back[0]} className="back-link" onClick={(e) => { if (canGoBack()) { e.preventDefault(); history.back() } }}>
+      <ArrowLeft size={18} aria-hidden="true" />Back
+    </Link>
+  )
   return signedIn ? <PatientShell title={title}>{top}{children}</PatientShell> : <Page bg={bg} title={title}>{children}</Page>
 }
 
