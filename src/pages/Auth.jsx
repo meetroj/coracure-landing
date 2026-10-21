@@ -14,7 +14,15 @@ import { Link, navigate, useSearchParams } from '../router.jsx'
    Mobile number and OTP only: there is no email sign-in. */
 
 const RESEND_SECONDS = 30
-const digitsOnly = (s) => s.replace(/\D/g, '').slice(0, 10)
+// Autofill and paste bring "+91 94068 79532", "0094068 79532" or "094068 79532": drop the country code or the trunk 0 first,
+// so the last digit is not cut off. Typing a 10-digit number by hand is left alone.
+const digitsOnly = (s) => {
+  let d = s.replace(/\D/g, '')
+  if (d.length > 10 && d.startsWith('0091')) d = d.slice(4)
+  else if (d.length > 10 && d.startsWith('91')) d = d.slice(2)
+  else if (d.length > 10 && d.startsWith('0')) d = d.slice(1)
+  return d.slice(0, 10)
+}
 
 export default function Auth({ mode }) {
   const signup = mode === 'signup'
