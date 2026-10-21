@@ -546,3 +546,13 @@ fieldset.pf-field { margin: 0; padding: 0; border: 0; min-width: 0; }
 .auth-card .pf-field { position: relative; padding-bottom: var(--s5); }
 .auth-card .pf-field .field-error { position: absolute; left: 0; right: 0; bottom: 0; }
 .auth-card .pf-field + .consent { margin-top: var(--s1); }
+
+/* login card: one even rhythm between the pieces */
+.auth-card .auth-sub { margin: var(--s1) 0 var(--s4); }
+.auth-card .pf-field { padding-bottom: 22px; }
+.auth-card .auth-btn { margin-top: var(--s2); }
+.auth-card .consent ~ .auth-btn { margin-top: var(--s3); }
+.auth-card .auth-fine { margin-top: var(--s3); }
+.auth-card .auth-aside { margin-top: var(--s3); }
+.auth-card .auth-switch { margin-top: var(--s2); }
+.auth-card .auth-logo { margin-bottom: var(--s4); }
