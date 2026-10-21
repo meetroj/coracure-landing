@@ -535,3 +535,14 @@ fieldset.pf-field { margin: 0; padding: 0; border: 0; min-width: 0; }
   .auth { padding-block: var(--s2) var(--s4); }
   .auth-card { padding: var(--s4); }
 }
+
+/* sign-up: air around the consent line */
+.auth-card .consent { margin-top: var(--s4); align-items: center; gap: var(--s1) var(--s3); }
+.auth-card .consent input { margin: 0; }
+.auth-card .consent + .auth-btn, .auth-card .consent ~ .auth-btn { margin-top: var(--s5); }
+.auth-card .pf-field + .consent { margin-top: var(--s4); }
+.auth-card .auth-aside { margin-top: var(--s4); }
+/* the number field's error line has its own reserved slot, so showing it never moves the consent line or the button */
+.auth-card .pf-field { position: relative; padding-bottom: var(--s5); }
+.auth-card .pf-field .field-error { position: absolute; left: 0; right: 0; bottom: 0; }
+.auth-card .pf-field + .consent { margin-top: var(--s1); }
