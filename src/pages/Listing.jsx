@@ -96,7 +96,8 @@ export default function Listing({ group, slug }) {
       </>
     )
   }
-  const showTools = Boolean(data && !data.unavailable)
+  // the same page for every category: search, sort and (when the API gave options) the filters; an empty category says so in the results area
+  const showTools = Boolean(data)
 
   return (
     <AreaPage bg="listing" title={heading}>
@@ -140,7 +141,7 @@ export default function Listing({ group, slug }) {
             </div>
           )}
 
-          {showTools && <p className="text-support count" aria-live="polite">{data.total} {data.total === 1 ? 'provider' : 'providers'}{q.trim() ? ` for “${q.trim()}”` : ''}</p>}
+          {showTools && !data.unavailable && <p className="text-support count" aria-live="polite">{data.total} {data.total === 1 ? 'provider' : 'providers'}{q.trim() ? ` for “${q.trim()}”` : ''}</p>}
 
           <div className={r.status === 'loading' && data ? 'is-updating' : undefined} aria-busy={r.status === 'loading'}>{body}</div>
         </div>

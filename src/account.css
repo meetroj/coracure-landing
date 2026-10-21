@@ -464,16 +464,13 @@ fieldset.pf-field { margin: 0; padding: 0; border: 0; min-width: 0; }
 .dash-main > .crumbs:first-child { padding-top: 0; }
 
 /* ---------- signed-in area: no site header; the logo heads the left menu (phones: a slim bar with the menu button) ---------- */
-.in-area .header { display: none; }
-.in-area .page { padding-top: var(--s4); }
+/* phones: the slim top bar (logo + menu button) replaces the site header; desktop keeps the header (logo + avatar) */
+@media (max-width: 1023px) { .in-area .header { display: none; } .in-area .page { padding-top: var(--s4); } }
 .area-top { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); min-height: 56px; }
 .area-logo { display: flex; align-items: center; }
 .area-logo img { display: block; height: 36px; width: auto; }
-.dnav-logo { display: none; }
 @media (min-width: 1024px) {
   .area-top { display: none; }
-  .dnav-logo { display: flex; align-items: center; padding: var(--s1) var(--s3) var(--s4); }
-  .dnav-logo img { display: block; height: 44px; width: auto; }
   .dash { margin-top: 0; }
   .dash > .dnav { min-height: calc(100dvh - var(--s8)); position: sticky; top: var(--s4); }
   .dash-main > .page-head:first-of-type { margin-top: var(--s2); }
@@ -556,3 +553,13 @@ fieldset.pf-field { margin: 0; padding: 0; border: 0; min-width: 0; }
 .auth-card .auth-aside { margin-top: var(--s3); }
 .auth-card .auth-switch { margin-top: var(--s2); }
 .auth-card .auth-logo { margin-bottom: var(--s4); }
+
+/* desktop: the logo and the avatar stay where they are; the menu starts under the logo and the content starts at the very top, level with them */
+@media (min-width: 1024px) { .in-area .page { padding-top: var(--s4); } .dash > .dnav { margin-top: calc(var(--header-h) - var(--s1)); top: calc(var(--header-h) + var(--s1)); min-height: calc(100dvh - var(--header-h) - var(--s9)); } .dash-main > .page-head:first-of-type { margin-top: 0; } }
+
+/* signed-in area: the left menu is the navigation, so no "Home / Consultations" breadcrumb trail */
+.in-area .crumbs { display: none; }
+
+/* a category with no filter options (or none listed yet) still gets the full-width results area */
+.listing:not(:has(> .filters)) { grid-template-columns: minmax(0, 1fr) !important; }
+.results-col > .state { width: 100%; margin-top: var(--s4); }

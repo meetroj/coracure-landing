@@ -12,7 +12,7 @@ import { Link } from '../router.jsx'
    badge until the data says so. Desktop: summary and detail sections on the left, the booking card on the right.
    Phones: summary, booking card, then the detail sections as an accordion. */
 
-const dash = (v, unit = '') => (v === null || v === undefined || v === '' ? '—' : `${v}${unit}`)
+const dash = (v, unit = '') => (v === null || v === undefined || v === '' ? '-' : `${v}${unit}`)
 
 // the native share sheet where there is one, otherwise the link goes to the clipboard
 function ShareButton({ name }) {
@@ -99,12 +99,12 @@ function Details({ p }) {
             {!p.qualifications && <p className="text-support">Qualifications and registration appear here once they are supplied and approved.</p>}
           </Block>
           <Block id="experience" icon={Award} title="Experience" phone={phone}>
-            <p>{p.experience != null ? `${p.experience}+ years of clinical experience in ${p.specialty}.` : '—'}</p>
+            <p>{p.experience != null ? `${p.experience}+ years of clinical experience in ${p.specialty}.` : '-'}</p>
           </Block>
         </div>
         <div className="pcol">
           <Block id="languages" icon={Globe} title="Languages" phone={phone}>
-            {p.languages.length ? <ul className="plist">{p.languages.map((l) => <li key={l}><Globe size={16} aria-hidden="true" />{l}</li>)}</ul> : <p>—</p>}
+            {p.languages.length ? <ul className="plist">{p.languages.map((l) => <li key={l}><Globe size={16} aria-hidden="true" />{l}</li>)}</ul> : <p>-</p>}
           </Block>
           <Block id="availability" icon={Clock} title="Availability" phone={phone}>
             <p>Consultation slots are updated regularly. Please select a date to view available timings.</p>

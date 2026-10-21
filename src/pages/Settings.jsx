@@ -14,7 +14,7 @@ import { Link } from '../router.jsx'
 
 const THEMES = [['light', Sun, 'Light', 'Clean and bright'], ['dark', Moon, 'Dark', 'Easier on the eyes'], ['system', Monitor, 'System Default', 'Matches your device']]
 const NOTIFY = [['appointments', CalendarDays, 'Appointment updates', 'Get notified about your consultation appointments.'], ['labs', FlaskConical, 'Lab order updates', 'Get notified about your lab test orders.'], ['reports', FileText, 'Report availability', 'Get notified when your lab reports are ready.']]
-const masked = (n) => (n ? `${n.slice(0, 3)} ${'X'.repeat(Math.max(0, n.length - 8))}${n.slice(-5)}` : '—')
+const masked = (n) => (n ? `${n.slice(0, 3)} ${'X'.repeat(Math.max(0, n.length - 8))}${n.slice(-5)}` : '-')
 
 function Card({ icon: Icon, title, sub, children }) {
   const id = useId()

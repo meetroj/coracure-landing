@@ -5,7 +5,7 @@ import { Button, inr } from './ui.jsx'
    the API supplies are shown; a missing one is a dash.
    ponytail: no photograph yet; when the API serves photos render <img> in `.avatar` (object-fit: cover). */
 
-const dash = (v, unit = '') => (v === null || v === undefined || v === '' ? '—' : `${v}${unit}`)
+const dash = (v, unit = '') => (v === null || v === undefined || v === '' ? '-' : `${v}${unit}`)
 
 export function ProviderCard({ provider }) {
   return (

@@ -101,7 +101,6 @@ export function PatientShell({ title, children }) {
           {children}
         </div>
         <div className="dnav">
-          <Link href="/dashboard" className="dnav-logo"><img className="logo-light" src={logo} alt="CoraCure, a healthier connection" width="192" height="48" /><img className="logo-dark" src={logoWhite} alt="" aria-hidden="true" width="192" height="48" /></Link>
           <AccountNav />
         </div>
       </div>
@@ -119,9 +118,9 @@ export function PatientShell({ title, children }) {
 /* ---------- formatting and status words, shared by the signed-in pages ---------- */
 
 const IST = { timeZone: 'Asia/Kolkata' }
-export const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('en-IN', { ...IST, day: 'numeric', month: 'short', year: 'numeric' }) : '—')
+export const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString('en-IN', { ...IST, day: 'numeric', month: 'short', year: 'numeric' }) : '-')
 export const fmtTime = (iso) => (iso ? new Date(iso).toLocaleTimeString('en-IN', { ...IST, hour: 'numeric', minute: '2-digit' }) : '')
-export const fmtDateTime = (iso) => (iso ? `${fmtDate(iso)}, ${fmtTime(iso)}` : '—')
+export const fmtDateTime = (iso) => (iso ? `${fmtDate(iso)}, ${fmtTime(iso)}` : '-')
 export const dayMonth = (iso) => {
   const d = new Date(iso)
   return [d.toLocaleDateString('en-IN', { ...IST, day: 'numeric' }), d.toLocaleDateString('en-IN', { ...IST, month: 'short' })]

@@ -144,7 +144,7 @@ function Payments() {
               <p className="text-meta"><ReceiptText size={14} aria-hidden="true" /> Consultation {p.currentReferenceCode ?? p.referenceCode}</p>
             </div>
             <div className="rcell"><span className="rlabel">Date</span>{fmtDate(p.paidAt ?? p.createdAt)}</div>
-            <div className="rcell"><span className="rlabel">Order / transaction</span>{p.transactionReference ?? p.orderReference ?? '—'}</div>
+            <div className="rcell"><span className="rlabel">Order / transaction</span>{p.transactionReference ?? p.orderReference ?? '-'}</div>
             <div className="rcell">{p.refund?.status === 'pending' ? paymentBadge('pending') : paymentBadge(p.status)}{p.refund?.status === 'pending' && <span className="text-meta"> Refund pending</span>}</div>
           </li>
         ))}

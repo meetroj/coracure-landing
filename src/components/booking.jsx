@@ -122,7 +122,7 @@ export function AvailabilityPanel({ provider }) {
     <aside className="avail avail-card" id="availability" aria-label="Consultation fee and availability">
       <div>
         <p className="fee-label">Consultation Fee</p>
-        <p className="fee-amount">{provider.fee == null ? '—' : inr(provider.fee)}</p>
+        <p className="fee-amount">{provider.fee == null ? '-' : inr(provider.fee)}</p>
       </div>
       <DayStrip value={date} min={min} onChange={(d) => { setDate(d); setSlot('') }} />
       <p className="avail-label">Available Time Slots</p>

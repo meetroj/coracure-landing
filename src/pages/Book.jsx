@@ -228,8 +228,8 @@ export default function Book({ slug }) {
                 <div><dt>Provider</dt><dd>{p.name}, {p.specialty}</dd></div>
                 <div><dt>Date and time</dt><dd>{fmtDay(date)}, {fmtTime(time)} IST</dd></div>
                 <div><dt>Mode</dt><dd>Online consultation</dd></div>
-                <div><dt>Patient</dt><dd>{details.name || '—'}{details.sex && `, ${details.sex}`}</dd></div>
-                <div><dt>Mobile</dt><dd>{details.mobile || '—'}</dd></div>
+                <div><dt>Patient</dt><dd>{details.name || '-'}{details.sex && `, ${details.sex}`}</dd></div>
+                <div><dt>Mobile</dt><dd>{details.mobile || '-'}</dd></div>
                 {details.email && <div><dt>Email</dt><dd>{details.email}</dd></div>}
                 {details.language && <div><dt>Language</dt><dd>{details.language}</dd></div>}
               </dl>

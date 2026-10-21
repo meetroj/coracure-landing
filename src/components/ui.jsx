@@ -173,4 +173,4 @@ export function Dialog({ open, onClose, labelledBy, className = '', children }) 
   )
 }
 
-export const inr = (n) => (n === null || n === undefined ? '—' : `₹${n.toLocaleString('en-IN')}`)
+export const inr = (n) => (n === null || n === undefined ? '-' : `₹${n.toLocaleString('en-IN')}`)
