@@ -18,14 +18,17 @@ addEventListener('popstate', () => {
 const snapshot = () => location.pathname + location.search + location.hash
 
 // history.state.i = how many in-app steps this entry is from the one the visit started on (0 = nothing earlier on this site)
+// history.state.from = the path of the page that opened this one
 const depth = () => history.state?.i ?? 0
 if (history.state?.i === undefined) history.replaceState({ i: 0 }, '')
-export const canGoBack = () => depth() > 0
+/** Back goes to the page this one was opened from, unless that was the landing page: then the page's own parent. */
+export const canGoBack = () => depth() > 0 && history.state?.from && history.state.from !== '/'
 
 export function navigate(to, { replace = false } = {}) {
   lastNav = replace ? 'replace' : 'push'
   const i = replace ? depth() : depth() + 1
-  history[replace ? 'replaceState' : 'pushState']({ i }, '', to)
+  const from = replace ? history.state?.from : location.pathname
+  history[replace ? 'replaceState' : 'pushState']({ i, from }, '', to)
   emit()
 }
 

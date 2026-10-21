@@ -585,4 +585,4 @@ select:disabled { opacity: 0.7; }
 .results-col > .toolbar + .state, .results-col > .toolbar + .text-support { margin-top: 0; }
 
 /* inside the patient area the header shows only the logo and the avatar; the public links stay on the landing page and the other public pages */
-.in-area .header .nav > a, .in-area .header .nav > .nav-dd { display: none; }
+.in-area .header .nav > :not(.nav-actions) { display: none; } /* links, the Consultations menu and the "Soon" labels */
