@@ -307,6 +307,10 @@ fieldset.pf-field { margin: 0; padding: 0; border: 0; min-width: 0; }
 .scard-icon { display: grid; flex: none; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--soft); color: var(--surfie); }
 .scard-main { display: grid; flex: 1; gap: var(--s3); min-width: 0; }
 .sselect { width: 100%; height: 48px; padding: 0 var(--s4); border: 1px solid var(--line-brand); border-radius: var(--radius-field); background: var(--white); font: 400 16px / 1 var(--font-body); color: var(--ink); }
+.langs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--s2); margin-bottom: var(--s3); }
+.lang { display: flex; align-items: center; gap: var(--s2); padding: var(--s2) var(--s3); border: 1px solid var(--line); border-radius: var(--radius-field); background: var(--white); cursor: pointer; font-size: var(--fs-ui); }
+.lang.on { border-color: var(--surfie); background: var(--soft); }
+.lang input { accent-color: var(--surfie); }
 .themes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s3); }
 .theme { position: relative; display: grid; justify-items: start; align-content: start; gap: 2px; padding: var(--s3) var(--s4); border: 1px solid var(--line); border-radius: var(--radius-field); background: var(--white); cursor: pointer; }
 .theme input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }

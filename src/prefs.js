@@ -1,23 +1,20 @@
-/* Display preferences kept on this device: website language, light/dark, and the notification switches shown on
-   /settings. Read and applied before the first render (main.jsx), so there is no flash of the wrong theme. */
+/* Display preference kept on this device: light/dark, chosen on /settings. Read and applied before the first render
+   (main.jsx), so there is no flash of the wrong theme. Language and notification choices live on the account (API). */
 
 const KEY = 'coracure.prefs.v2' // v2: an earlier build could save Dark as the default; those old values are ignored
-export const DEFAULTS = { lang: 'en', theme: 'light', notify: { appointments: true, labs: true, reports: false } }
-export const LANGS = [['en', 'English'], ['hi', 'हिन्दी (Hindi)'], ['mr', 'मराठी (Marathi)'], ['kn', 'ಕನ್ನಡ (Kannada)'], ['ta', 'தமிழ் (Tamil)']]
+export const DEFAULTS = { theme: 'light' }
 
 export function readPrefs() {
   try {
-    const s = JSON.parse(localStorage.getItem(KEY)) ?? {}
-    return { ...DEFAULTS, ...s, notify: { ...DEFAULTS.notify, ...s.notify } }
+    return { ...DEFAULTS, ...(JSON.parse(localStorage.getItem(KEY)) ?? {}) }
   } catch {
     return DEFAULTS
   }
 }
 
-const dark = (m) => m === 'dark' // System Default is Light
+// Only "dark" is dark; System Default is the Light look.
 export function applyPrefs(p) {
-  document.documentElement.dataset.theme = dark(p.theme) ? 'dark' : 'light'
-  document.documentElement.lang = p.lang
+  document.documentElement.dataset.theme = p.theme === 'dark' ? 'dark' : 'light'
 }
 export function savePrefs(p) {
   try {

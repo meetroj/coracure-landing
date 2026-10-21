@@ -17,13 +17,18 @@ export async function verifyOtp(mobileNumber, challengeId, code) {
 /* ---------- profile ---------- */
 
 export const getProfile = () => api('/me/profile')
-export const saveProfile = ({ fullName, dateOfBirth, gender }) => {
+export const saveProfile = ({ fullName, dateOfBirth, gender, languages }) => {
   const body = {}
   if (fullName !== undefined) body.fullName = fullName
   if (dateOfBirth !== undefined) body.dateOfBirth = dateOfBirth
   if (gender !== undefined) body.gender = gender
+  if (languages !== undefined) body.languages = languages // consultation languages, most preferred first
   return api('/me/profile', { method: 'PATCH', body })
 }
+/** The consultation languages the backend accepts (common/languages.ts); the codes the provider filter uses too. */
+export const LANGUAGES = [['en', 'English'], ['hi', 'Hindi'], ['hinglish', 'Hinglish'], ['mr', 'Marathi'], ['kn', 'Kannada'], ['pa', 'Punjabi'], ['ta', 'Tamil'], ['te', 'Telugu'], ['bn', 'Bengali'], ['gu', 'Gujarati'], ['ml', 'Malayalam'], ['ur', 'Urdu']]
+export const getNotificationPrefs = () => api('/me/notifications/preferences') // { appointments, labs, reports }
+export const saveNotificationPrefs = ({ appointments, labs, reports }) => api('/me/notifications/preferences', { method: 'PUT', body: { appointments, labs, reports } })
 export const saveAddress = ({ line, pinCode, latitude, longitude }) => {
   const body = { line: line.trim(), pinCode: pinCode.trim() }
   if (latitude !== undefined && longitude !== undefined) Object.assign(body, { latitude, longitude }) // both or neither
