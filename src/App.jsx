@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
+import { Children, useEffect, useRef, useState } from 'react'
 import { ArrowRight, FileText, FlaskConical, Search, Stethoscope } from 'lucide-react'
 import appIcon from './assets/logo/coracure-mark-twotone.svg'
-import heroBg from './assets/BG/hero (4).png'
 import { Footer, Header, MaybeLink } from './components/layout.jsx'
 import { ProviderCard } from './components/ProviderCard.jsx'
-import { Breadcrumbs, Button, EmptyState, Page } from './components/ui.jsx'
+import { Breadcrumbs, Button, EmptyState, Page, useMedia } from './components/ui.jsx'
 import { DIRECTORY } from './directory.js'
 import Book from './pages/Book.jsx'
 import Consultations from './pages/Consultations.jsx'
@@ -48,6 +47,26 @@ const StoreBadge = ({ href, store, icon }) => {
     : <span className="store" aria-disabled="true" title="Not available yet">{icon}{label}</span>
 }
 
+/* Phones: a row of cards swipes sideways (CSS snaps it and lets the next card peek); the dots follow the position.
+   Wider screens show the same <ul> as a grid and hide the dots. The list is only a tab stop where it scrolls. */
+function Rail({ className, label, children }) {
+  const ref = useRef(null)
+  const [at, setAt] = useState(0)
+  const phone = useMedia('(max-width: 767px)')
+  const n = Children.count(children)
+  const onScroll = () => {
+    const el = ref.current
+    const max = el.scrollWidth - el.clientWidth
+    setAt(max > 0 ? Math.round((el.scrollLeft / max) * (n - 1)) : 0)
+  }
+  return (
+    <>
+      <ul ref={ref} className={className} aria-label={label} tabIndex={phone ? 0 : undefined} onScroll={onScroll}>{children}</ul>
+      <div className="dots" aria-hidden="true">{Array.from({ length: n }, (_, i) => <span key={i} className={i === at ? 'on' : undefined} />)}</div>
+    </>
+  )
+}
+
 /* ---------- Homepage sections ---------- */
 
 // Search opens the Consultations search (specialties, providers) or the lab catalogue for lab words, keeping the query
@@ -61,9 +80,10 @@ function onSearch(e) {
 
 function Hero() {
   // ponytail: read once at render, so it doesn't follow a window resize; the full text doesn't fit a phone-width field
-  const placeholder = matchMedia('(max-width: 559px)').matches ? 'Search doctors or lab tests' : 'Search symptoms, doctors or lab tests'
+  const narrow = (px) => matchMedia(`(max-width: ${px}px)`).matches
+  const placeholder = narrow(359) ? 'Search doctors or tests' : narrow(389) ? 'Search doctors or lab tests' : 'Search symptoms, doctors or lab tests'
   return (
-    <section className="hero" id="top" style={{ backgroundImage: `url("${heroBg}")` }}>
+    <section className="hero" id="top">
       <div className="wrap">
         <h1 className="t-display">Your Health, <span>Our Priority.</span></h1>
         <p className="hero-sub">Find healthcare professionals and explore lab tests, all in one place.</p>
@@ -141,9 +161,13 @@ function Group({ id, tone, title, blurb, viewAll, role, items, first }) {
           <MaybeLink href={viewAll} className="link">View All <ArrowRight size={18} aria-hidden="true" /></MaybeLink>
         </div>
         {CONCEPT
-          ? <ul className={`pcards${items.length > 3 ? ' pcards-4' : ''}`}>
-              {items.map(([Icon, name]) => <ProviderCard key={name} Icon={Icon} category={name} role={role} />)}
-            </ul>
+          ? items.length > 3
+            ? <ul className="pcards pcards-4">
+                {items.map(([Icon, name]) => <ProviderCard key={name} Icon={Icon} category={name} role={role} />)}
+              </ul>
+            : <Rail className="pcards" label={`${title} profiles`}>
+                {items.map(([Icon, name]) => <ProviderCard key={name} Icon={Icon} category={name} role={role} />)}
+              </Rail>
           : <p className="row-empty">Coming soon.</p>}
       </div>
     </section>
@@ -169,10 +193,11 @@ function PetCare() {
           </div>
           <div className="pet-photo" role="img" aria-label="A golden retriever and a tabby cat resting together on a blanket" />
           {CONCEPT
-            ? <ul className="vets">
+            ? <Rail className="vets" label="Veterinary profiles">
                 <ProviderCard Icon={Icon} category={name} role={role} variant="horizontal" />
                 <ProviderCard Icon={Icon} category={name} role={role} variant="horizontal" />
-              </ul>
+                <ProviderCard Icon={Icon} category={name} role={role} variant="horizontal" />
+              </Rail>
             : <p className="row-empty">Coming soon.</p>}
         </div>
       </div>
@@ -270,8 +295,9 @@ export default function App() {
   const [Route, props] = match(url.pathname) ?? [NotFound, {}]
   return (
     <>
+      <a className="skip" href="#main">Skip to main content</a>
       <Header />
-      <main>
+      <main id="main" tabIndex={-1}>
         <Route key={url.pathname} {...props} />
       </main>
       <Footer />

@@ -1,9 +1,18 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
 import { CircleAlert, Info, RefreshCw, Search, SearchX, X } from 'lucide-react'
 import { Link, usePageTitle } from '../router.jsx'
 import { DEMO } from '../data.js'
 
 /* Shared building blocks for the inner pages. Every page uses these, so equivalent elements look identical. */
+
+/** True while a CSS media query matches (follows resizes and rotation). */
+export function useMedia(query) {
+  return useSyncExternalStore(
+    (cb) => { const m = matchMedia(query); m.addEventListener('change', cb); return () => m.removeEventListener('change', cb) },
+    () => matchMedia(query).matches,
+    () => false,
+  )
+}
 
 /** Page wrapper: header-height gap, the page's own background layer (`bg` picks it in pages.css), one container. */
 export function Page({ bg, title, children }) {

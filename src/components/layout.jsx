@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, Menu, UserRound, X } from 'lucide-react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { ChevronDown, Menu, Minus, Plus, UserRound, X } from 'lucide-react'
 import logo from '../assets/logo/coracure-wide.svg'
 import logoWhite from '../assets/logo/coracure-wide-white.svg'
 import { APP, CONSULT_MENU, FOOTER_COLS, LINKS } from '../site.js'
 import { signOut, useSession } from '../auth.js'
 import { Link, useUrl } from '../router.jsx'
+import { useMedia } from './ui.jsx'
 
 /* ---------- Links ---------- */
 
@@ -49,7 +50,15 @@ export function Header() {
   useEffect(() => {
     if (!open) return
     const close = () => setOpen(false)
-    const onKey = (e) => e.key === 'Escape' && close()
+    const onKey = (e) => {
+      if (e.key === 'Escape') { close(); ref.current.querySelector('.menu-btn').focus() }
+      if (e.key !== 'Tab') return
+      // keep Tab inside the header while the menu is open
+      const f = [...ref.current.querySelectorAll('a[href], button, summary')].filter((el) => el.offsetParent)
+      const [first, last] = [f[0], f[f.length - 1]]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
     const onDown = (e) => !ref.current.contains(e.target) && close()
     const onResize = () => window.innerWidth > 1023 && close()
     document.documentElement.classList.add('menu-open')
@@ -69,7 +78,7 @@ export function Header() {
   }
   return (
     // transparent and not sticky: it sits on the hero background and scrolls away with it (never comes back on scroll up)
-    <header ref={ref} className="header">
+    <header ref={ref} className={`header${open ? ' is-open' : ''}`}>
       <div className="header-inner">
         <Link href="/" className="logo" onClick={close}>
           <img src={logo} alt="CoraCure, a healthier connection" width="192" height="48" />
@@ -124,6 +133,21 @@ export function Header() {
   )
 }
 
+// a footer column: plain heading on wide screens, an expand/collapse row on phones (collapsed links are not focusable)
+function FooterCol({ title, className, children }) {
+  const phone = useMedia('(max-width: 767px)')
+  const [open, setOpen] = useState(false)
+  const id = useId()
+  return (
+    <nav className={`footer-col ${className}${open ? ' is-open' : ''}`} aria-label={title}>
+      {phone
+        ? <h3><button type="button" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>{title}{open ? <Minus size={18} aria-hidden="true" /> : <Plus size={18} aria-hidden="true" />}</button></h3>
+        : <h3>{title}</h3>}
+      <div id={id} className="footer-col-body">{children}</div>
+    </nav>
+  )
+}
+
 const YEAR = new Date().getFullYear()
 
 export function Footer() {
@@ -137,8 +161,7 @@ export function Footer() {
             <p className="footer-about">Compassionate, connected healthcare for every Indian, today and tomorrow.</p>
           </div>
           {FOOTER_COLS.map(([title, groups]) => (
-            <nav key={title} className={`footer-col${title === 'Contact Us' ? ' footer-col-contact' : ''}`} aria-label={title}>
-              <h3>{title}</h3>
+            <FooterCol key={title} title={title} className={title === 'Contact Us' ? 'footer-col-contact' : ''}>
               {groups.map(([label, links], g) => (
                 <div key={g} className="footer-group">
                   {label && <p className="footer-sub">{label}</p>}
@@ -155,7 +178,7 @@ export function Footer() {
                   </Social>
                 </div>
               )}
-            </nav>
+            </FooterCol>
           ))}
         </div>
 

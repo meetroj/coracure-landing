@@ -25,13 +25,13 @@
 }
 /* each page: its own selected background; the base colour is what the image fades into */
 .page-consult { --page-base: #fafcfc; }
-.page-consult::before { background-image: url('./assets/BG/Mint consultation backdrop with stethoscope-1.png'); }
+.page-consult::before { background-image: url('./assets/BG/Mint consultation backdrop with stethoscope-1.webp'); }
 .page-listing { --page-base: #f3faf8; }
-.page-listing::before { background-image: url('./assets/BG/Quiet mint geometric website background-3.png'); }
+.page-listing::before { background-image: url('./assets/BG/Quiet mint geometric website background-3.webp'); }
 .page-profile { --page-base: #f2fcf9; }
-.page-profile::before { background-image: url('./assets/BG/Minimal mint provider profile background-2.png'); }
+.page-profile::before { background-image: url('./assets/BG/Minimal mint provider profile background-2.webp'); }
 .page-lab { --page-base: #fff; }
-.page-lab::before { background-image: url('./assets/BG/Soft mint lab background-4.png'); }
+.page-lab::before { background-image: url('./assets/BG/Soft mint lab background-4.webp'); }
 
 .text-support { font-size: var(--fs-ui); line-height: 1.5; color: var(--ink-soft); }
 .text-meta { font-size: var(--fs-meta); line-height: 1.5; color: var(--ink-soft); }
@@ -400,10 +400,17 @@
   .page-profile { padding-bottom: calc(var(--s9) + 72px); } /* room for the bottom action bar */
 }
 @media (max-width: 767px) {
+  /* specialty buttons: one short row that scrolls sideways, not several tall wrapped rows */
+  .spec-links { flex-wrap: nowrap; gap: var(--s2); margin-inline: calc(-1 * var(--gutter)); padding: var(--s1) var(--gutter); overflow-x: auto; scrollbar-width: none; }
+  .spec-links::-webkit-scrollbar { display: none; }
+  .spec-links a { position: relative; flex: none; min-height: 32px; padding: 0 var(--s3); font-size: 12px; }
+  .spec-links a::after { content: ''; position: absolute; inset: -6px 0; } /* keeps the 44px touch height */
   .dash-cards, .dash-panels { grid-template-columns: minmax(0, 1fr); }
   .dcard { flex-wrap: wrap; padding: var(--s4); }
   .dcard > .btn { width: 100%; }
-  .page::before { height: 340px; background-size: auto 300px; background-position: right 0 top 56px; -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 55%, transparent); mask-image: linear-gradient(transparent, #000 22%, #000 55%, transparent); }
+  .page::before { height: 340px; background-size: auto 300px; background-position: right 0 top 56px;
+  /* the artwork starts 56px down, clear of the header; it fades in from exactly there, so no line shows under the header */
+  -webkit-mask-image: linear-gradient(transparent 56px, #000 150px, #000 55%, transparent); mask-image: linear-gradient(transparent 56px, #000 150px, #000 55%, transparent); }
   .page-head { margin-top: var(--s3); }
   .toolbar { grid-template-columns: minmax(0, 1fr) auto; }
   .pcard-row { grid-template-columns: 72px minmax(0, 1fr); gap: var(--s3) var(--s4); padding: var(--s4); }
@@ -426,6 +433,9 @@
   .profile-tabs .tabs { padding-inline: var(--s4); }
   .avail { padding: var(--s4); }
   .results { padding: var(--s4); }
+}
+@media (max-width: 459px) {
+  .spec-links { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); } /* cue: more buttons to the right */
 }
 @media (max-width: 559px) {
   .cat-grid { grid-template-columns: minmax(0, 1fr); gap: var(--s3); margin-top: var(--s6); }
