@@ -1,96 +1,116 @@
-import { useEffect, useState } from 'react'
-import { CalendarDays, UserRound, Video } from 'lucide-react'
-import { Breadcrumbs, Button, DemoNotice, EmptyState, ErrorState, LoadingSkeleton, Page, Tabs, inr, panelProps, useAsync } from '../components/ui.jsx'
+import { useState } from 'react'
+import { Award, BadgeCheck, ChevronDown, ChevronLeft, Clock, GraduationCap, Globe, Languages, Share2, Stethoscope, UserRound, Video, Volume2 } from 'lucide-react'
+import { Breadcrumbs, Button, EmptyState, ErrorState, LoadingSkeleton, useAsync, useMedia } from '../components/ui.jsx'
 import { AvailabilityPanel } from '../components/booking.jsx'
 import { DIRECTORY } from '../directory.js'
 import { getProvider, isUnavailable } from '../data.js'
-import { scrollToEl } from '../scroll.js'
+import { AreaPage, LoginPrompt } from '../components/patient.jsx'
+import { Link } from '../router.jsx'
 
 /* /providers/{slug}: a shareable public profile. Only fields the data supplies are shown; a missing field is a dash
-   or an honest "will appear here", never invented text. */
+   or an honest "will appear here", never invented text. There is no "Verified by CoraCure" badge, photo or registration
+   badge until the data says so. Desktop: summary and detail sections on the left, the booking card on the right.
+   Phones: summary, booking card, then the detail sections as an accordion. */
 
 const dash = (v, unit = '') => (v === null || v === undefined || v === '' ? '—' : `${v}${unit}`)
-const TABS = [['about', 'About'], ['qualifications', 'Qualifications'], ['details', 'Consultation details']]
 
-function ProfileSummary({ p }) {
+// the native share sheet where there is one, otherwise the link goes to the clipboard
+function ShareButton({ name }) {
+  const [msg, setMsg] = useState('')
+  async function share() {
+    const url = location.origin + location.pathname
+    try {
+      if (navigator.share) await navigator.share({ title: name, url })
+      else {
+        await navigator.clipboard.writeText(url)
+        setMsg('Link copied.')
+      }
+    } catch (e) {
+      if (e.name !== 'AbortError') setMsg('Copy the link from your browser address bar.')
+    }
+  }
   return (
-    <section className="summary" aria-labelledby="provider-name">
-      <span className="avatar avatar-lg"><UserRound size={56} aria-hidden="true" /></span>
-      <div className="summary-main">
-        <div className="summary-title">
-          <h1 id="provider-name" className="t-h2">{p.name}</h1>
-          <span className="badge">Illustrative profile</span>
+    <div className="pshare">
+      <button type="button" className="pshare-btn" onClick={share} aria-label={`Share ${name}`}><Share2 size={16} aria-hidden="true" /><span>Share</span></button>
+      <span className="text-meta" role="status">{msg}</span>
+    </div>
+  )
+}
+
+function Summary({ p }) {
+  return (
+    <section className="psum" aria-labelledby="provider-name">
+      <div className="psum-photo" aria-hidden="true"><UserRound size={72} /></div>
+      <div className="psum-main">
+        <div className="psum-top">
+          <span />
+          <ShareButton name={p.name} />
         </div>
-        <p className="summary-spec">{p.specialty}</p>
-        <dl className="facts">
-          <div><dt>Qualifications</dt><dd>{dash(p.qualifications)}</dd></div>
-          <div><dt>Registration details</dt><dd>{dash(p.registration)}</dd></div>
-          <div><dt>Experience</dt><dd>{dash(p.experience, ' years')}</dd></div>
-          {p.languages.length > 0 && <div><dt>Languages</dt><dd>{p.languages.join(', ')}</dd></div>}
-        </dl>
-        <p className="online"><Video size={16} aria-hidden="true" />Online consultation</p>
+        <h1 id="provider-name" className="t-page">{p.name}</h1>
+        <p className="psum-spec"><Stethoscope size={18} aria-hidden="true" />{p.specialty}</p>
+        <ul className="psum-facts">
+          {p.qualifications && <li><GraduationCap size={18} aria-hidden="true" />{p.qualifications}</li>}
+          {p.experience != null && <li><Award size={18} aria-hidden="true" />{p.experience}+ years experience</li>}
+          {p.languages.length > 0 && <li><Languages size={18} aria-hidden="true" />{p.languages.join(', ')}</li>}
+          {p.registration && <li><BadgeCheck size={18} aria-hidden="true" />Registration: {p.registration}</li>}
+        </ul>
+        <ul className="psum-modes" aria-label="Consultation modes">
+          <li><Video size={18} aria-hidden="true" />Video Consultation</li>
+          <li><Volume2 size={18} aria-hidden="true" />Audio Consultation</li>
+        </ul>
       </div>
     </section>
   )
 }
 
-function ProfileTabs({ p }) {
+// a titled detail block: an open section on desktop, a collapsed row on phones
+function Block({ id, icon: Icon, title, phone, children }) {
+  if (!phone) return <section id={id} className="pblock" aria-labelledby={`${id}-t`}><h2 id={`${id}-t`} className="t-card">{title}</h2>{children}</section>
+  return (
+    <details id={id} name="pdetail" className="pacc">
+      <summary><Icon size={20} aria-hidden="true" /><span>{title}</span><ChevronDown size={18} aria-hidden="true" /></summary>
+      <div className="pacc-body">{children}</div>
+    </details>
+  )
+}
+
+const TABS = [['about', 'About'], ['areas', 'Areas of Consultation'], ['qualifications', 'Qualifications'], ['experience', 'Experience'], ['languages', 'Languages'], ['availability', 'Availability']]
+
+function Details({ p }) {
+  const phone = useMedia('(max-width: 767px)')
   const [tab, setTab] = useState('about')
   return (
-    <section className="profile-tabs">
-      <Tabs label="Provider information" idBase="profile" items={TABS} value={tab} onChange={setTab} />
-      <div className="tabpanel" {...panelProps('profile', tab)}>
-        {tab === 'about' && (
-          <>
-            <h2 className="t-h2">About</h2>
-            <p>Information about the provider’s professional background, areas of interest and approach to patient care will appear here once approved profile details are connected.</p>
-            <h3 className="t-card">Areas of focus</h3>
-            <p className="text-support">Key areas of clinical interest will be listed here.</p>
-          </>
-        )}
-        {tab === 'qualifications' && (
-          <>
-            <h2 className="t-h2">Qualifications</h2>
-            <dl className="facts facts-stack">
-              <div><dt>Qualifications</dt><dd>{dash(p.qualifications)}</dd></div>
-              <div><dt>Registration details</dt><dd>{dash(p.registration)}</dd></div>
-            </dl>
-            <p className="text-support">Qualifications and registration details are shown here once they are supplied and approved.</p>
-          </>
-        )}
-        {tab === 'details' && (
-          <>
-            <h2 className="t-h2">Consultation details</h2>
-            <dl className="facts facts-stack">
-              <div><dt>Mode</dt><dd>Online consultation</dd></div>
-              <div><dt>Consultation fee</dt><dd>{inr(p.fee)}</dd></div>
-              <div><dt>Languages</dt><dd>{p.languages.join(', ') || '—'}</dd></div>
-              <div><dt>Time zone</dt><dd>IST (UTC+05:30)</dd></div>
-            </dl>
-            <p className="text-support">Available dates and times are shown in the Consultation availability panel.</p>
-          </>
-        )}
+    <div className="pdetails">
+      {!phone && (
+        <nav className="ptabs" aria-label="On this page">
+          {TABS.map(([id, label]) => <a key={id} href={`#${id}`} aria-current={tab === id ? 'true' : undefined} onClick={() => setTab(id)}>{label}</a>)}
+        </nav>
+      )}
+      <div className="pgrid">
+        <div className="pcol">
+          <Block id="about" icon={UserRound} title="About" phone={phone}>
+            <p>Information about the provider’s professional background and approach to patient care will appear here once approved profile details are connected.</p>
+          </Block>
+          <Block id="areas" icon={Stethoscope} title="Areas of Consultation" phone={phone}>
+            <p>Key areas of consultation will be listed here once approved profile details are connected.</p>
+          </Block>
+          <Block id="qualifications" icon={GraduationCap} title="Qualifications" phone={phone}>
+            <p>{dash(p.qualifications)}</p>
+            {!p.qualifications && <p className="text-support">Qualifications and registration appear here once they are supplied and approved.</p>}
+          </Block>
+          <Block id="experience" icon={Award} title="Experience" phone={phone}>
+            <p>{p.experience != null ? `${p.experience}+ years of clinical experience in ${p.specialty}.` : '—'}</p>
+          </Block>
+        </div>
+        <div className="pcol">
+          <Block id="languages" icon={Globe} title="Languages" phone={phone}>
+            {p.languages.length ? <ul className="plist">{p.languages.map((l) => <li key={l}><Globe size={16} aria-hidden="true" />{l}</li>)}</ul> : <p>—</p>}
+          </Block>
+          <Block id="availability" icon={Clock} title="Availability" phone={phone}>
+            <p>Consultation slots are updated regularly. Please select a date to view available timings.</p>
+          </Block>
+        </div>
       </div>
-    </section>
-  )
-}
-
-// phones and tablets: the panel sits below the content, so a bar at the bottom jumps to it until it is on screen
-function JumpToAvailability() {
-  const [seen, setSeen] = useState(0) // how many of the panel / the footer are on screen
-  useEffect(() => {
-    const on = new Set()
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => (e.isIntersecting ? on.add(e.target) : on.delete(e.target)))
-      setSeen(on.size)
-    })
-    document.querySelectorAll('#availability, .footer').forEach((el) => io.observe(el))
-    return () => io.disconnect()
-  }, [])
-  if (seen) return null
-  return (
-    <div className="jump">
-      <Button onClick={() => scrollToEl(document.getElementById('availability'))}><CalendarDays size={18} aria-hidden="true" />Select a date and time</Button>
     </div>
   )
 }
@@ -103,29 +123,27 @@ export default function Profile({ slug }) {
 
   let body
   if (r.status === 'error') {
-    body = isUnavailable(r.error)
+    body = r.error?.loginRequired ? <LoginPrompt what="this provider" />
+      : isUnavailable(r.error)
       ? <EmptyState title="Provider profiles are not available yet" action={<Button href="/consultations">Browse consultations</Button>}>Profiles open once approved provider data is connected.</EmptyState>
       : <ErrorState title="This profile could not be loaded" onRetry={r.reload} />
   } else if (r.status === 'loading') body = <LoadingSkeleton rows={3} />
   else if (!p) body = <EmptyState title="Provider not found" action={<Button href="/consultations">Browse consultations</Button>}>This profile does not exist or is no longer listed.</EmptyState>
   else {
     body = (
-      <div className="profile">
-        <div className="profile-main">
-          <ProfileSummary p={p} />
-          <ProfileTabs p={p} />
-        </div>
+      <div className="ppage">
+        <Link href={`/${p.group}/${p.specialtySlug}`} className="pback"><ChevronLeft size={16} aria-hidden="true" />Back to providers</Link>
+        <Summary p={p} />
         <AvailabilityPanel provider={p} />
+        <Details p={p} />
       </div>
     )
   }
 
   return (
-    <Page bg="profile" title={title}>
+    <AreaPage bg="plain" title={title}>
       <Breadcrumbs items={[['Home', '/'], ...(p ? [[dir.crumb, `/${p.group}`], [p.specialty, `/${p.group}/${p.specialtySlug}`], [p.name]] : [['Consultations', '/consultations'], ['Provider']])]} />
-      <DemoNotice />
       {body}
-      {p && <JumpToAvailability />}
-    </Page>
+    </AreaPage>
   )
 }

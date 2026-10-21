@@ -1,9 +1,10 @@
 import { useId, useState } from 'react'
 import { ArrowRight, Check, ChevronLeft, ChevronRight, Info, UserRound } from 'lucide-react'
-import { Breadcrumbs, Button, DemoNotice, EmptyState, ErrorState, LoadingSkeleton, Page, PageHeading, inr, useAsync } from '../components/ui.jsx'
+import { Breadcrumbs, Button, EmptyState, ErrorState, LoadingSkeleton, PageHeading, inr, useAsync } from '../components/ui.jsx'
 import { LoginGate, SLOT_ID, SlotSelector, addDays, fmtDay, fmtTime, todayIST } from '../components/booking.jsx'
 import { loginHref, useSession } from '../auth.js'
 import { LANGUAGES, getAvailability, getProvider, isUnavailable } from '../data.js'
+import { AreaPage, LoginPrompt } from '../components/patient.jsx'
 import { Link, navigate, useSearchParams } from '../router.jsx'
 
 /* /book/{provider}: the three booking steps (Consultation, Patient details, Review). The choice lives in the query
@@ -122,16 +123,17 @@ export default function Book({ slug }) {
   if (r.status === 'error' || r.status === 'loading' || !p) {
     let body
     if (r.status === 'error') {
-      body = isUnavailable(r.error)
+      body = r.error?.loginRequired ? <LoginPrompt what="booking" />
+        : isUnavailable(r.error)
         ? <EmptyState title="Booking is not available yet" action={<Button href="/consultations">Browse consultations</Button>}>Booking opens once approved provider data is connected.</EmptyState>
         : <ErrorState title="This page could not be loaded" onRetry={r.reload} />
     } else if (r.status === 'loading') body = <LoadingSkeleton rows={3} />
     else body = <EmptyState title="Provider not found" action={<Button href="/consultations">Browse consultations</Button>}>This provider does not exist or is no longer listed.</EmptyState>
     return (
-      <Page bg="profile" title="Book your online consultation">
+      <AreaPage bg="profile" title="Book your online consultation">
         <Breadcrumbs items={[['Home', '/'], ['Consultations', '/consultations'], ['Book']]} />
         {body}
-      </Page>
+      </AreaPage>
     )
   }
 
@@ -157,10 +159,9 @@ export default function Book({ slug }) {
   }
 
   return (
-    <Page bg="profile" title="Book your online consultation">
+    <AreaPage bg="profile" title="Book your online consultation">
       <Breadcrumbs items={[['Home', '/'], ['Consultations', '/consultations'], [p.name, `/providers/${p.slug}`], ['Book']]} />
       <PageHeading title="Book your online consultation">Get expert medical advice from qualified doctors, anytime, anywhere.</PageHeading>
-      <DemoNotice>Illustrative preview: the provider, fee and times are placeholders, and payment is not connected, so no appointment can be requested yet.</DemoNotice>
       <Stepper step={step} />
 
       <div className="book">
@@ -266,6 +267,6 @@ export default function Book({ slug }) {
       </div>
 
       <LoginGate open={gate} onClose={() => setGate(false)} summary={`${p.name}: ${fmtDay(date)}, ${fmtTime(time)} IST`} />
-    </Page>
+    </AreaPage>
   )
 }

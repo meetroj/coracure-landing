@@ -65,28 +65,47 @@ export const SlotSelector = ({ slots, value, onChange, wide }) => (
 )
 
 /** provider: { slug, name, fee, bookable }. */
+const DAY_CHIPS = 5
+
+// five days at a time from today, with arrows for the days after
+function DayStrip({ value, min, onChange }) {
+  const [from, setFrom] = useState(0)
+  const days = Array.from({ length: DAY_CHIPS }, (_, i) => addDays(min, from + i))
+  const part = (iso, o) => utc(iso).toLocaleDateString('en-IN', { timeZone: 'UTC', ...o })
+  return (
+    <div className="daystrip">
+      <button type="button" className="icon-btn" aria-label="Earlier dates" disabled={from === 0} onClick={() => setFrom(Math.max(0, from - DAY_CHIPS))}><ChevronLeft size={18} aria-hidden="true" /></button>
+      <div className="daystrip-days" role="group" aria-label="Choose a date">
+        {days.map((iso) => (
+          <button key={iso} type="button" className="dchip" aria-pressed={value === iso} aria-label={fmtDay(iso)} onClick={() => onChange(iso)}>
+            <span>{part(iso, { weekday: 'short' })}</span><strong>{part(iso, { day: 'numeric' })}</strong><span>{part(iso, { month: 'short' })}</span>
+          </button>
+        ))}
+      </div>
+      <button type="button" className="icon-btn" aria-label="Later dates" onClick={() => setFrom(from + DAY_CHIPS)}><ChevronRight size={18} aria-hidden="true" /></button>
+    </div>
+  )
+}
+
 export function AvailabilityPanel({ provider }) {
   const min = todayIST()
-  const [date, setDate] = useState('')
+  const [date, setDate] = useState(min)
   const [slot, setSlot] = useState('')
-  const avail = useAsync(() => (date && provider.bookable ? getAvailability(provider.slug, date) : Promise.resolve(null)), `${provider.slug}|${date}|${provider.bookable}`)
+  const avail = useAsync(() => (provider.bookable ? getAvailability(provider.slug, date) : Promise.resolve(null)), `${provider.slug}|${date}|${provider.bookable}`)
 
   const slots = avail.status === 'ok' && avail.data?.status === 'ok' ? avail.data.slots : null
   // a slot that is not in the list that came back is not selected
   const chosen = slots?.find((s) => s.id === slot)
   const canContinue = Boolean(provider.bookable && date && chosen)
 
-  // on to the booking page with the choice in the URL; the demo switch is carried so a preview stays a preview
+  // on to the booking page with the choice in the URL
   const next = () => {
     const q = new URLSearchParams({ date, slot })
-    const demo = new URLSearchParams(location.search).get('demo')
-    if (demo) q.set('demo', demo)
     navigate(`/book/${provider.slug}?${q}`)
   }
 
   let body
   if (!provider.bookable) body = <p className="slot-note">This provider is not taking online consultations right now.</p>
-  else if (!date) body = <p className="slot-note">Select a date to see available times.</p>
   else if (avail.status === 'error') body = <ErrorState title="Availability could not be loaded" onRetry={avail.reload}>Try again in a moment.</ErrorState>
   else if (avail.status === 'loading') body = <LoadingSkeleton rows={2} variant="slots" />
   else if (avail.data?.status === 'not_connected') {
@@ -100,22 +119,22 @@ export function AvailabilityPanel({ provider }) {
   else body = <SlotSelector slots={slots} value={slot} onChange={setSlot} />
 
   return (
-    <aside className="avail" id="availability" aria-labelledby="avail-title">
-      <h2 id="avail-title" className="t-h2">Consultation availability</h2>
-      <p className="avail-label">Select a date</p>
-      <DateSelector value={date} min={min} onChange={(d) => { setDate(d); setSlot('') }} />
+    <aside className="avail avail-card" id="availability" aria-label="Consultation fee and availability">
+      <div>
+        <p className="fee-label">Consultation Fee</p>
+        <p className="fee-amount">{provider.fee == null ? '—' : inr(provider.fee)}</p>
+      </div>
+      <DayStrip value={date} min={min} onChange={(d) => { setDate(d); setSlot('') }} />
+      <p className="avail-label">Available Time Slots</p>
       <div className="slot-area" aria-live="polite" aria-busy={avail.status === 'loading'}>{body}</div>
       <p className="text-meta">Times are shown in IST (UTC+05:30).</p>
       {chosen && <p className="avail-chosen">Selected: {fmtDay(date)}, {fmtTime(chosen.time)} IST</p>}
-      <dl className="avail-fee">
-        <dt>Consultation fee</dt>
-        <dd>{inr(provider.fee)}</dd>
-      </dl>
-      <p className="text-meta">For emergency purposes, consult nearby hospital.</p>
-      <Button className="avail-go" disabled={!canContinue} onClick={next}>Continue</Button>
+      <Button className="avail-go" disabled={!canContinue} onClick={next}>Book Consultation</Button>
+      <p className="text-meta">Consultation will be conducted online. For emergency purposes, consult nearby hospital.</p>
     </aside>
   )
 }
+
 
 /** The sign-in step of booking: keeps where the visitor was, so logging in returns them to this step. */
 export function LoginGate({ open, onClose, summary }) {

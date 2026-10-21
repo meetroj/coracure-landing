@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import { ArrowRight, PawPrint, Stethoscope, UserRound, Users } from 'lucide-react'
-import { Breadcrumbs, DemoNotice, EmptyState, ErrorState, LoadingSkeleton, Page, PageHeading, SearchField, useAsync } from '../components/ui.jsx'
+import { Breadcrumbs, EmptyState, ErrorState, LoadingSkeleton, PageHeading, SearchField, useAsync } from '../components/ui.jsx'
+import { AreaPage } from '../components/patient.jsx'
 import { Link, navigate, useSearchParams } from '../router.jsx'
 import { DIRECTORY } from '../directory.js'
 import { searchAll, suggest } from '../data.js'
@@ -131,7 +132,6 @@ function Results({ q, clear }) {
                 {providers.map((p) => <li key={p.slug}><Link href={`/providers/${p.slug}`}><UserRound size={16} aria-hidden="true" />{p.name}<span>{p.specialty}</span></Link></li>)}
               </ul>
               {providerTotal > providers.length && <p className="text-support">Showing {providers.length} of {providerTotal} providers. Open a specialty to see them all.</p>}
-              <DemoNotice />
             </div>
           )}
           {labs && (
@@ -158,7 +158,7 @@ export default function Consultations() {
     setParams(next, { replace: false })
   }
   return (
-    <Page bg="consult" title="Consultations">
+    <AreaPage bg="consult" title="Consultations">
       <Breadcrumbs items={[['Home', '/'], ['Consultations']]} />
       <PageHeading title="Find the right kind of care">Choose a professional category to begin.</PageHeading>
 
@@ -181,6 +181,6 @@ export default function Consultations() {
           ))}
         </ul>
       </section>
-    </Page>
+    </AreaPage>
   )
 }

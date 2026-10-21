@@ -2,8 +2,8 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { ChevronDown, Menu, Minus, Plus, UserRound, X } from 'lucide-react'
 import logo from '../assets/logo/coracure-wide.svg'
 import logoWhite from '../assets/logo/coracure-wide-white.svg'
-import { APP, CONSULT_MENU, FOOTER_COLS, LINKS } from '../site.js'
-import { signOut, useSession } from '../auth.js'
+import { CONSULT_MENU, FOOTER_COLS, LINKS } from '../site.js'
+import { loginHref, signOut, signupHref, useSession } from '../auth.js'
 import { Link, useUrl } from '../router.jsx'
 import { useMedia } from './ui.jsx'
 
@@ -30,7 +30,9 @@ const Social = ({ href, label, children }) => href && (
 const sectionOf = (path) => (path === '/' ? 'home' : path.startsWith('/lab-tests') ? 'lab' : path === '/consultations' || /^\/(specialties|super-specialties|paramedical|pet-care|dentists|providers|book)(\/|$)/.test(path) ? 'consult' : null)
 
 export function Header() {
-  const section = sectionOf(useUrl().pathname)
+  const { pathname, search } = useUrl()
+  const section = sectionOf(pathname)
+  const here = pathname + search
   const { signedIn } = useSession()
   const ref = useRef(null)
   const [open, setOpen] = useState(false)
@@ -74,26 +76,33 @@ export function Header() {
   }, [open])
   const close = () => {
     setOpen(false)
-    ref.current.querySelector('.nav-dd').open = false
+    const dd = ref.current.querySelector('.nav-dd')
+    if (dd) dd.open = false
   }
   return (
     // transparent and not sticky: it sits on the hero background and scrolls away with it (never comes back on scroll up)
     <header ref={ref} className={`header${open ? ' is-open' : ''}`}>
       <div className="header-inner">
         <Link href="/" className="logo" onClick={close}>
-          <img src={logo} alt="CoraCure, a healthier connection" width="192" height="48" />
+          <img className="logo-light" src={logo} alt="CoraCure, a healthier connection" width="192" height="48" />
+          <img className="logo-dark" src={logoWhite} alt="" aria-hidden="true" width="192" height="48" />
         </Link>
         <nav id="main-nav" className={`nav${open ? ' open' : ''}`} aria-label="Main">
-          <MaybeLink href="/" onClick={close} aria-current={section === 'home' ? 'page' : undefined}>Home</MaybeLink>
-          <MaybeLink href={LINKS.about}>About Us</MaybeLink>
-          <details className="nav-dd">
-            <summary aria-current={section === 'consult' ? 'page' : undefined}>Consultations <ChevronDown size={16} aria-hidden="true" /></summary>
-            <ul>
-              {CONSULT_MENU.map(([label, href]) => <li key={label}><MaybeLink href={href} onClick={close}>{label}</MaybeLink></li>)}
-            </ul>
-          </details>
-          <MaybeLink href={LINKS.labTests} onClick={close} aria-current={section === 'lab' ? 'page' : undefined}>Lab Tests</MaybeLink>
-          <MaybeLink href={LINKS.careers}>Careers</MaybeLink>
+          {/* signed in: the public links (Home, Consultations, Lab Tests...) are gone; the account menu on the left is the navigation */}
+          {!signedIn && (
+            <>
+            <MaybeLink href="/" onClick={close} aria-current={section === 'home' ? 'page' : undefined}>Home</MaybeLink>
+            <MaybeLink href={LINKS.about}>About Us</MaybeLink>
+            <details className="nav-dd">
+              <summary aria-current={section === 'consult' ? 'page' : undefined}>Consultations <ChevronDown size={16} aria-hidden="true" /></summary>
+              <ul>
+                {CONSULT_MENU.map(([label, href]) => <li key={label}><MaybeLink href={href} onClick={close}>{label}</MaybeLink></li>)}
+              </ul>
+            </details>
+            <MaybeLink href={LINKS.labTests} onClick={close} aria-current={section === 'lab' ? 'page' : undefined}>Lab Tests</MaybeLink>
+            <MaybeLink href={LINKS.careers}>Careers</MaybeLink>
+            </>
+          )}
           {/* phones: the header is too narrow for these, so they live in the menu */}
           <div className="nav-actions">
             {signedIn ? (
@@ -103,8 +112,8 @@ export function Header() {
               </>
             ) : (
               <>
-                <Link href={LINKS.login ?? APP} className="btn btn-outline" onClick={close}>Login</Link>
-                <Link href={LINKS.signup ?? APP} className="btn btn-primary" onClick={close}>Sign Up</Link>
+                <Link href={loginHref(here)} className="btn btn-outline" onClick={close}>Login</Link>
+                <Link href={signupHref(here)} className="btn btn-primary" onClick={close}>Sign Up</Link>
               </>
             )}
           </div>
@@ -114,14 +123,13 @@ export function Header() {
             <details className="acct">
               <summary aria-label="Account menu"><span className="acct-avatar"><UserRound size={20} aria-hidden="true" /></span><ChevronDown size={16} aria-hidden="true" /></summary>
               <ul>
-                <li><Link href="/dashboard" onClick={close}>Dashboard</Link></li>
                 <li><button type="button" onClick={() => { close(); signOut() }}>Log out</button></li>
               </ul>
             </details>
           ) : (
             <>
-              <Link href={LINKS.login ?? APP} className="btn btn-outline">Login</Link>
-              <Link href={LINKS.signup ?? APP} className="btn btn-primary">Sign Up</Link>
+              <Link href={loginHref(here)} className="btn btn-outline">Login</Link>
+              <Link href={signupHref(here)} className="btn btn-primary">Sign Up</Link>
             </>
           )}
           <button type="button" className="menu-btn" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} aria-controls="main-nav" onClick={() => setOpen(!open)}>

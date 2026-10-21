@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
-import { Breadcrumbs, Button, DemoNotice, EmptyState, ErrorState, LoadingSkeleton, Page, PageHeading, Pagination, SearchField, useAsync } from '../components/ui.jsx'
+import { Breadcrumbs, Button, EmptyState, ErrorState, LoadingSkeleton, PageHeading, Pagination, SearchField, useAsync } from '../components/ui.jsx'
 import { EMPTY, FilterDrawer, FilterPanel, SelectedFilterChip, SortControl, countFilters, filterLabel } from '../components/filters.jsx'
 import { ProviderCard } from '../components/ProviderCard.jsx'
 import { DIRECTORY } from '../directory.js'
 import { searchProviders } from '../data.js'
+import { AreaPage, LoginPrompt } from '../components/patient.jsx'
 import { Link, navigate, useSearchParams } from '../router.jsx'
 
 /* /specialties, /super-specialties, /paramedical, /pet-care, /dentists (a category) and /{category}/{specialty}
@@ -73,7 +74,7 @@ export default function Listing({ group, slug }) {
   const withSpecialty = !slug && dir.specialties.length > 1
 
   let body
-  if (r.status === 'error') body = <ErrorState title="Providers could not be loaded" onRetry={r.reload} />
+  if (r.status === 'error') body = r.error?.loginRequired ? <LoginPrompt what="providers" /> : <ErrorState title="Providers could not be loaded" onRetry={r.reload} />
   else if (!data) body = <LoadingSkeleton rows={4} />
   else if (data.unavailable) {
     body = (
@@ -98,10 +99,9 @@ export default function Listing({ group, slug }) {
   const showTools = Boolean(data && !data.unavailable)
 
   return (
-    <Page bg="listing" title={heading}>
+    <AreaPage bg="listing" title={heading}>
       <Breadcrumbs items={crumbs} />
       <PageHeading title={heading}>Explore online consultation providers in this {specialty ? 'specialty' : 'category'}.</PageHeading>
-      <DemoNotice />
 
       {!slug && dir.specialties.length > 1 && (
         <nav className="spec-links" aria-label={`${dir.title} by specialty`}>
@@ -152,6 +152,6 @@ export default function Listing({ group, slug }) {
           <FilterPanel hideHead facets={facets} value={draft} withSpecialty={withSpecialty} onToggle={toggle(draft, setDraft)} onClear={() => setDraft(EMPTY)} />
         </FilterDrawer>
       )}
-    </Page>
+    </AreaPage>
   )
 }

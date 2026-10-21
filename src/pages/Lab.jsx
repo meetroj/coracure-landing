@@ -1,15 +1,16 @@
 import { useId, useState } from 'react'
 import { CircleAlert, ClipboardCheck, Clock, Droplet, Droplets, HeartPulse, Leaf, MapPin, Microscope, TestTube } from 'lucide-react'
-import { Breadcrumbs, Button, DemoNotice, EmptyState, ErrorState, LoadingSkeleton, Page, PageHeading, Pagination, SearchField, Tabs, inr, panelProps, useAsync } from '../components/ui.jsx'
+import { Breadcrumbs, Button, EmptyState, ErrorState, LoadingSkeleton, PageHeading, Pagination, SearchField, Tabs, inr, panelProps, useAsync } from '../components/ui.jsx'
 import { PinBoxes, RESULT } from '../components/pin.jsx'
 import { checkPin, getCatalogueItem, isUnavailable, searchCatalogue, validPin } from '../data.js'
+import { AreaPage, LoginPrompt } from '../components/patient.jsx'
 import { navigate, useSearchParams } from '../router.jsx'
 
 /* /lab-tests: PIN-code serviceability, search, Health Packages / Individual Tests, catalogue cards.
    /lab-tests/{slug}: one package or test. State lives in the query string (?tab= &q= &pin= &page=). */
 
 const PAGE_SIZE = 3
-const TABS = [['packages', 'Health Packages'], ['tests', 'Individual Tests']]
+const TABS = [['tests', 'Individual Tests'], ['packages', 'Health Packages']]
 const ICONS = { package: [HeartPulse, Droplet, Leaf], test: [TestTube, Droplets, Microscope] }
 
 function write(patch) {
@@ -94,7 +95,7 @@ function LabCatalogueCard({ item, index, pin }) {
 
 export default function LabTests() {
   const [params] = useSearchParams()
-  const tab = params.get('tab') === 'tests' ? 'tests' : 'packages'
+  const tab = params.get('tab') === 'packages' ? 'packages' : 'tests'
   const q = params.get('q') ?? ''
   const pin = validPin(params.get('pin') ?? '') ? params.get('pin') : ''
   const pages = Math.max(1, Number(params.get('page')) || 1)
@@ -106,12 +107,13 @@ export default function LabTests() {
     setText(q)
   }
 
-  const r = useAsync(() => searchCatalogue({ kind: tab === 'tests' ? 'test' : 'package', q, limit: pages * PAGE_SIZE }), `${tab}|${q}|${pages}|${params.get('demo')}`)
+  const r = useAsync(() => searchCatalogue({ kind: tab === 'tests' ? 'test' : 'package', q, limit: pages * PAGE_SIZE }), `${tab}|${q}|${pages}`)
   const data = r.data
 
   let body
   if (r.status === 'error') {
-    body = isUnavailable(r.error)
+    body = r.error?.loginRequired ? <LoginPrompt what="lab tests" />
+      : isUnavailable(r.error)
       ? <EmptyState title="The lab catalogue is not available yet">Tests and health packages appear here once the approved catalogue is connected.</EmptyState>
       : <ErrorState title="The catalogue could not be loaded" onRetry={r.reload} />
   } else if (!data) body = <LoadingSkeleton rows={3} variant="grid" />
@@ -131,19 +133,18 @@ export default function LabTests() {
   }
 
   return (
-    <Page bg="lab" title="Lab tests and health packages">
+    <AreaPage bg="lab" title="Lab tests and health packages">
       <Breadcrumbs items={[['Home', '/'], ['Lab Tests']]} />
       <PageHeading title="Lab tests and health packages">Check availability in your area.</PageHeading>
-      <DemoNotice>Illustrative preview: the tests, packages and prices shown are placeholders, and PIN checks are not connected to a lab service yet.</DemoNotice>
 
       <div className="lab-controls">
         <ServiceabilityInput key={pin} pin={pin} />
         <SearchField label="Search tests or packages" placeholder="Search tests or packages" button="Search" clearLabel="Clear search" value={text} onChange={setText} onSubmit={(v) => write({ q: v.trim() })} />
       </div>
 
-      <Tabs label="Catalogue" idBase="lab" className="tabs-lab" items={TABS} value={tab} onChange={(v) => write({ tab: v === 'tests' ? 'tests' : '' })} />
+      <Tabs label="Catalogue" idBase="lab" className="tabs-lab" items={TABS} value={tab} onChange={(v) => write({ tab: v === 'packages' ? 'packages' : '' })} />
       <div {...panelProps('lab', tab)} className={`catalogue${r.status === 'loading' && data ? ' is-updating' : ''}`} aria-busy={r.status === 'loading'}>{body}</div>
-    </Page>
+    </AreaPage>
   )
 }
 
@@ -152,11 +153,11 @@ export default function LabTests() {
 const NOT_YET = 'appears here when the lab catalogue is connected.'
 
 // the PIN box and what it found; nothing here claims a collection option the service has not confirmed
-function CheckAvailability({ pin }) {
+function CheckAvailability({ pin, testId }) {
   const help = useId()
   const [digits, setDigits] = useState(() => Array.from({ length: 6 }, (_, i) => pin[i] ?? ''))
   const [invalid, setInvalid] = useState(false)
-  const r = useAsync(() => (pin ? checkPin(pin) : Promise.resolve(null)), pin)
+  const r = useAsync(() => (pin ? checkPin(pin, testId) : Promise.resolve(null)), pin)
   const res = r.status === 'ok' && r.data ? RESULT[r.data.status] : null
 
   const submit = (e) => {
@@ -204,7 +205,8 @@ export function LabDetail({ slug }) {
 
   let body
   if (r.status === 'error') {
-    body = isUnavailable(r.error)
+    body = r.error?.loginRequired ? <LoginPrompt what="this test" />
+      : isUnavailable(r.error)
       ? <EmptyState title="The lab catalogue is not available yet" action={<Button href="/lab-tests">Back to lab tests</Button>} />
       : <ErrorState title="This page could not be loaded" onRetry={r.reload} />
   } else if (r.status === 'loading') body = <LoadingSkeleton rows={3} />
@@ -242,16 +244,15 @@ export function LabDetail({ slug }) {
           </div>
           <p className="text-meta dtl-price">Price: {inr(item.price)}{item.price === null && ' (shown when the lab catalogue is connected)'}</p>
         </section>
-        <CheckAvailability pin={pin} />
+        <CheckAvailability pin={pin} testId={item.slug} />
       </div>
     )
   }
   return (
-    <Page bg="lab" title={item?.name ?? 'Lab test'}>
+    <AreaPage bg="plain" title={item?.name ?? 'Lab test'}>
       <Breadcrumbs items={[['Home', '/'], ['Lab Tests', `/lab-tests${pin ? `?pin=${pin}` : ''}`], [item?.name ?? 'Details']]} />
       {item && <PageHeading title={item.name}>{item.summary}</PageHeading>}
-      {item && <DemoNotice>{item.about ? 'The test details follow the design reference and are not yet from the approved lab catalogue.' : 'Illustrative preview: this entry is a placeholder, not an approved test or package.'}</DemoNotice>}
       {body}
-    </Page>
+    </AreaPage>
   )
 }

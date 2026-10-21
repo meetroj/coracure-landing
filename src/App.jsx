@@ -1,18 +1,25 @@
-import { Children, useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight, FileText, FlaskConical, Search, Stethoscope } from 'lucide-react'
 import appIcon from './assets/logo/coracure-mark-twotone.svg'
 import { Footer, Header, MaybeLink } from './components/layout.jsx'
-import { ProviderCard } from './components/ProviderCard.jsx'
-import { Breadcrumbs, Button, EmptyState, Page, useMedia } from './components/ui.jsx'
-import { DIRECTORY } from './directory.js'
+import { Breadcrumbs, Button, EmptyState, Page } from './components/ui.jsx'
+import { DIRECTORY, slugify } from './directory.js'
+import Account from './pages/Account.jsx'
+import Auth from './pages/Auth.jsx'
 import Book from './pages/Book.jsx'
+import Careers from './pages/Careers.jsx'
 import Consultations from './pages/Consultations.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import Legal from './pages/Legal.jsx'
 import Listing from './pages/Listing.jsx'
 import LabTests, { LabDetail } from './pages/Lab.jsx'
+import Partner from './pages/Partner.jsx'
 import Profile from './pages/Profile.jsx'
+import Records from './pages/Records.jsx'
+import Settings from './pages/Settings.jsx'
+import Support from './pages/Support.jsx'
 import { Link, navigate, usePageTitle, useRouteScroll, useUrl } from './router.jsx'
-import { APP, CONCEPT, GROUPS, LINKS, TABS } from './site.js'
+import { APP, GROUPS, LINKS, TABS } from './site.js'
 
 /* The CoraCure website. Routes: / (homepage), /consultations, /{category} and /{category}/{specialty} (provider
    directory), /providers/{slug}, /lab-tests, /lab-tests/{slug}. Header, footer and tokens are shared; the pages'
@@ -45,26 +52,6 @@ const StoreBadge = ({ href, store, icon }) => {
   return href
     ? <a className="store" href={href} target="_blank" rel="noopener noreferrer" aria-label={store === 'App Store' ? 'Download CoraCure on the App Store' : 'Get CoraCure on Google Play'}>{icon}{label}</a>
     : <span className="store" aria-disabled="true" title="Not available yet">{icon}{label}</span>
-}
-
-/* Phones: a row of cards swipes sideways (CSS snaps it and lets the next card peek); the dots follow the position.
-   Wider screens show the same <ul> as a grid and hide the dots. The list is only a tab stop where it scrolls. */
-function Rail({ className, label, children }) {
-  const ref = useRef(null)
-  const [at, setAt] = useState(0)
-  const phone = useMedia('(max-width: 767px)')
-  const n = Children.count(children)
-  const onScroll = () => {
-    const el = ref.current
-    const max = el.scrollWidth - el.clientWidth
-    setAt(max > 0 ? Math.round((el.scrollLeft / max) * (n - 1)) : 0)
-  }
-  return (
-    <>
-      <ul ref={ref} className={className} aria-label={label} tabIndex={phone ? 0 : undefined} onScroll={onScroll}>{children}</ul>
-      <div className="dots" aria-hidden="true">{Array.from({ length: n }, (_, i) => <span key={i} className={i === at ? 'on' : undefined} />)}</div>
-    </>
-  )
 }
 
 /* ---------- Homepage sections ---------- */
@@ -148,11 +135,21 @@ function Intro() {
   )
 }
 
-function Group({ id, tone, title, blurb, viewAll, role, items, first }) {
+// each row is a list of category links into the directory: the providers themselves need a patient login
+const CategoryLinks = ({ viewAll, items, className = 'cats' }) => (
+  <ul className={className}>
+    {items.map(([Icon, name]) => (
+      <li key={name}>
+        <Link href={`${viewAll}/${slugify(name)}`}><span className="cat-ic"><Icon size={22} aria-hidden="true" /></span><span>{name}</span><ArrowRight size={18} aria-hidden="true" /></Link>
+      </li>
+    ))}
+  </ul>
+)
+
+function Group({ id, tone, title, blurb, viewAll, items }) {
   return (
     <section className={`group group-${tone}`} id={id} aria-labelledby={`${id}-title`}>
       <div className="wrap">
-        {CONCEPT && first && <p className="notice">Profiles are concept previews, not real providers. Directories and profile pages open once approved provider data is connected.</p>}
         <div className="group-head">
           <div>
             <h2 id={`${id}-title`} className="t-h2">{title}</h2>
@@ -160,15 +157,7 @@ function Group({ id, tone, title, blurb, viewAll, role, items, first }) {
           </div>
           <MaybeLink href={viewAll} className="link">View All <ArrowRight size={18} aria-hidden="true" /></MaybeLink>
         </div>
-        {CONCEPT
-          ? items.length > 3
-            ? <ul className="pcards pcards-4">
-                {items.map(([Icon, name]) => <ProviderCard key={name} Icon={Icon} category={name} role={role} />)}
-              </ul>
-            : <Rail className="pcards" label={`${title} profiles`}>
-                {items.map(([Icon, name]) => <ProviderCard key={name} Icon={Icon} category={name} role={role} />)}
-              </Rail>
-          : <p className="row-empty">Coming soon.</p>}
+        <CategoryLinks viewAll={viewAll} items={items} />
       </div>
     </section>
   )
@@ -177,8 +166,7 @@ function Group({ id, tone, title, blurb, viewAll, role, items, first }) {
 // Pet Care has its own composition: BG/Golden retriever and tabby cat.png as a photo layer at the right on desktop,
 // and as a separate crop (.pet-photo) between the heading and the cards when it stacks.
 function PetCare() {
-  const { title, blurb, viewAll, role, items } = GROUPS.find((g) => g.id === 'pet-care')
-  const [[Icon, name]] = items
+  const { title, blurb, viewAll, items } = GROUPS.find((g) => g.id === 'pet-care')
   return (
     <section className="pet" id="pet-care" aria-labelledby="pet-care-title">
       <div className="wrap">
@@ -192,13 +180,7 @@ function PetCare() {
             <MaybeLink href={viewAll} className="link">View All <ArrowRight size={18} aria-hidden="true" /></MaybeLink>
           </div>
           <div className="pet-photo" role="img" aria-label="A golden retriever and a tabby cat resting together on a blanket" />
-          {CONCEPT
-            ? <Rail className="vets" label="Veterinary profiles">
-                <ProviderCard Icon={Icon} category={name} role={role} variant="horizontal" />
-                <ProviderCard Icon={Icon} category={name} role={role} variant="horizontal" />
-                <ProviderCard Icon={Icon} category={name} role={role} variant="horizontal" />
-              </Rail>
-            : <p className="row-empty">Coming soon.</p>}
+          <CategoryLinks viewAll={viewAll} items={items} className="cats cats-one" />
         </div>
       </div>
     </section>
@@ -240,6 +222,14 @@ function match(pathname) {
   if (!a) return [Home, {}]
   if (a === 'open') return [OpenInApp, {}]
   if (c) return null
+  if ((a === 'login' || a === 'signup') && !b) return [Auth, { mode: a }]
+  if (a === 'profile' && !b) return [Account, {}]
+  if (a === 'health-records' && !b) return [Records, {}]
+  if (a === 'careers' && !b) return [Careers, {}]
+  if (a === 'partner-with-us' && !b) return [Partner, {}]
+  if (a === 'support' && !b) return [Support, {}]
+  if (a === 'settings' && !b) return [Settings, {}]
+  if (a === 'legal' && b) return [Legal, { type: b }]
   if (a === 'consultations' && !b) return [Consultations, {}]
   if (a === 'providers' && b) return [Profile, { slug: b }]
   if (a === 'book' && b) return [Book, { slug: b }]

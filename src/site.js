@@ -6,20 +6,14 @@ import { Activity, Apple, Baby, Bean, Brain, BrainCircuit, Hand, HeartPulse, Paw
 // ponytail: paste each URL here when its page goes live; nothing else needs to change.
 // login/signup fall back to the app download until web accounts and booking exist.
 export const LINKS = {
-  login: null, signup: null, consultations: '/consultations', labTests: '/lab-tests',
-  about: null, careers: null, partner: null, support: null, dentists: '/dentists',
+  login: '/login', signup: '/signup', consultations: '/consultations', labTests: '/lab-tests',
+  about: null, careers: '/careers', partner: '/partner-with-us', support: '/support', dentists: '/dentists',
   specialties: '/specialties', superSpecialties: '/super-specialties', paramedical: '/paramedical', petCare: '/pet-care', // each group's directory
-  profile: null, recConsultations: null, recPayments: null, recPrescriptions: null, recReports: null, // private: need login
-  terms: null, privacy: null, refund: null, dataProtection: null, grievance: null,
+  profile: '/profile', recConsultations: '/health-records?tab=consultations', recPayments: '/health-records?tab=payments', recPrescriptions: '/health-records?tab=prescriptions', recReports: '/health-records?tab=reports', // private: need login
+  terms: '/legal/terms_of_use', privacy: '/legal/privacy_policy', refund: '/legal/refund_policy', dataProtection: null, grievance: null, // the three policies are served by GET /legal/documents/:type; the other two have no document type yet
   appStore: null, playStore: null, linkedin: null, instagram: null,
 }
 export const APP = '/#download'
-
-// Provider cards are CONCEPT profiles until approved live provider data is connected: each card says so and shows
-// no photo, name, qualification, experience or fee, and one notice above the first group repeats it.
-// ponytail: switch to false to show "Coming soon" instead; real cards need a provider feed (GET /services/:id/providers
-// needs a patient login today). Never put invented clinicians, fees or portraits here.
-export const CONCEPT = true
 
 // Category names come from the 15 Oct design reference (specialty / super-specialty) and the guide (paramedical, pet care).
 // ponytail: confirm they match the live catalogue before launch.

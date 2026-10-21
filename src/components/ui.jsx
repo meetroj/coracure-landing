@@ -1,7 +1,6 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
-import { CircleAlert, Info, RefreshCw, Search, SearchX, X } from 'lucide-react'
+import { CircleAlert, RefreshCw, Search, SearchX, X } from 'lucide-react'
 import { Link, usePageTitle } from '../router.jsx'
-import { DEMO } from '../data.js'
 
 /* Shared building blocks for the inner pages. Every page uses these, so equivalent elements look identical. */
 
@@ -15,11 +14,11 @@ export function useMedia(query) {
 }
 
 /** Page wrapper: header-height gap, the page's own background layer (`bg` picks it in pages.css), one container. */
-export function Page({ bg, title, children }) {
+export function Page({ bg, title, wide, children }) {
   usePageTitle(`${title} | CoraCure`)
   return (
     <div className={`page page-${bg}`}>
-      <div className="wrap">{children}</div>
+      <div className={wide ? 'wrap wrap-wide' : 'wrap'}>{children}</div>
     </div>
   )
 }
@@ -116,15 +115,6 @@ export const ErrorState = ({ title = 'Something went wrong', children = 'We coul
     {onRetry && <Button variant="secondary" onClick={onRetry}><RefreshCw size={16} aria-hidden="true" />Try again</Button>}
   </div>
 )
-
-/** Says plainly that the content on the page is illustrative. Renders nothing once DEMO is off. */
-export const DemoNotice = ({ children = 'Illustrative preview: the providers, prices and availability shown are placeholders, not real data.' }) =>
-  DEMO && (
-    <p className="demo-notice">
-      <Info size={16} aria-hidden="true" />
-      <span>{children}</span>
-    </p>
-  )
 
 /** "Showing x of y" with a Load more button while there is more. */
 export function Pagination({ shown, total, noun, onMore, busy }) {
