@@ -130,7 +130,7 @@ export default function Book({ slug }) {
     } else if (r.status === 'loading') body = <LoadingSkeleton rows={3} />
     else body = <EmptyState title="Provider not found" action={<Button href="/consultations">Browse consultations</Button>}>This provider does not exist or is no longer listed.</EmptyState>
     return (
-      <AreaPage bg="profile" title="Book your online consultation">
+      <AreaPage bg="profile" title="Book your online consultation" back={[`/providers/${slug}`, 'Back to provider']}>
         <Breadcrumbs items={[['Home', '/'], ['Consultations', '/consultations'], ['Book']]} />
         {body}
       </AreaPage>
@@ -159,7 +159,7 @@ export default function Book({ slug }) {
   }
 
   return (
-    <AreaPage bg="profile" title="Book your online consultation">
+    <AreaPage bg="profile" title="Book your online consultation" back={[`/providers/${slug}`, 'Back to provider']}>
       <Breadcrumbs items={[['Home', '/'], ['Consultations', '/consultations'], [p.name, `/providers/${p.slug}`], ['Book']]} />
       <PageHeading title="Book your online consultation">Get expert medical advice from qualified doctors, anytime, anywhere.</PageHeading>
       <Stepper step={step} />

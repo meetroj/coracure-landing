@@ -79,7 +79,7 @@ function SettingsBody() {
         <div className="themes" role="radiogroup" aria-label="Appearance">
           {THEMES.map(([v, Icon, t, d]) => (
             <label key={v} className={`theme${p.theme === v ? ' on' : ''}`}>
-              <input type="radio" name="theme" value={v} checked={p.theme === v} onChange={() => setP({ ...p, theme: v })} />
+              <input type="radio" name="theme" value={v} checked={p.theme === v} onChange={() => { setP({ ...p, theme: v }); savePrefs({ ...readPrefs(), theme: v }) }} />
               <Icon size={22} aria-hidden="true" /><strong>{t}</strong><span>{d}</span>
             </label>
           ))}

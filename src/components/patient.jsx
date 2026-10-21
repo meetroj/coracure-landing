@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import logo from '../assets/logo/coracure-wide.svg'
 import logoWhite from '../assets/logo/coracure-wide-white.svg'
-import { CalendarDays, FileText, FlaskConical, House, Menu, Settings, Stethoscope, UserRound, X } from 'lucide-react'
+import { ArrowLeft, CalendarDays, FileText, FlaskConical, House, Menu, Settings, Stethoscope, UserRound, X } from 'lucide-react'
 import { Button, Dialog, EmptyState, Page, useAsync } from './ui.jsx'
 import { MaybeLink } from './layout.jsx'
 import { StatusBadge } from './forms.jsx'
@@ -59,9 +59,11 @@ export function LoginPrompt({ what = 'this' }) {
 
 /** A page that is public for visitors and part of the patient area once signed in (consultations, lab tests, providers,
     booking): signed in it sits inside the account layout with the left menu; signed out it is the ordinary public page. */
-export function AreaPage({ bg, title, children }) {
+export function AreaPage({ bg, title, back, children }) {
   const { signedIn } = useSession()
-  return signedIn ? <PatientShell title={title}>{children}</PatientShell> : <Page bg={bg} title={title}>{children}</Page>
+  // back = [href, label]: a way out of a page that was opened from another one (the breadcrumb trail is hidden here)
+  const top = back && <Link href={back[0]} className="back-link"><ArrowLeft size={18} aria-hidden="true" />{back[1]}</Link>
+  return signedIn ? <PatientShell title={title}>{top}{children}</PatientShell> : <Page bg={bg} title={title}>{children}</Page>
 }
 
 /** The page frame for every signed-in route. `title` is the tab title; the page puts its own <h1> in children. */

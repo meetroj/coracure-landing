@@ -249,7 +249,7 @@ export function LabDetail({ slug }) {
     )
   }
   return (
-    <AreaPage bg="plain" title={item?.name ?? 'Lab test'}>
+    <AreaPage bg="plain" title={item?.name ?? 'Lab test'} back={['/lab-tests', 'Back to lab tests']}>
       <Breadcrumbs items={[['Home', '/'], ['Lab Tests', `/lab-tests${pin ? `?pin=${pin}` : ''}`], [item?.name ?? 'Details']]} />
       {item && <PageHeading title={item.name}>{item.summary}</PageHeading>}
       {body}

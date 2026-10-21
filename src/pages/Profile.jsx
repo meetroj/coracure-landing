@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Award, BadgeCheck, ChevronDown, ChevronLeft, Clock, GraduationCap, Globe, Languages, Share2, Stethoscope, UserRound, Video, Volume2 } from 'lucide-react'
+import { Award, BadgeCheck, ChevronDown, Clock, GraduationCap, Globe, Languages, Share2, Stethoscope, UserRound, Video, Volume2 } from 'lucide-react'
 import { Breadcrumbs, Button, EmptyState, ErrorState, LoadingSkeleton, useAsync, useMedia } from '../components/ui.jsx'
 import { AvailabilityPanel } from '../components/booking.jsx'
 import { DIRECTORY } from '../directory.js'
 import { getProvider, isUnavailable } from '../data.js'
 import { AreaPage, LoginPrompt } from '../components/patient.jsx'
-import { Link } from '../router.jsx'
 
 /* /providers/{slug}: a shareable public profile. Only fields the data supplies are shown; a missing field is a dash
    or an honest "will appear here", never invented text. There is no "Verified by CoraCure" badge, photo or registration
@@ -132,7 +131,6 @@ export default function Profile({ slug }) {
   else {
     body = (
       <div className="ppage">
-        <Link href={`/${p.group}/${p.specialtySlug}`} className="pback"><ChevronLeft size={16} aria-hidden="true" />Back to providers</Link>
         <Summary p={p} />
         <AvailabilityPanel provider={p} />
         <Details p={p} />
@@ -141,7 +139,7 @@ export default function Profile({ slug }) {
   }
 
   return (
-    <AreaPage bg="plain" title={title}>
+    <AreaPage bg="plain" title={title} back={p ? [`/${p.group}/${p.specialtySlug}`, 'Back to providers'] : ['/consultations', 'Back to consultations']}>
       <Breadcrumbs items={[['Home', '/'], ...(p ? [[dir.crumb, `/${p.group}`], [p.specialty, `/${p.group}/${p.specialtySlug}`], [p.name]] : [['Consultations', '/consultations'], ['Provider']])]} />
       {body}
     </AreaPage>

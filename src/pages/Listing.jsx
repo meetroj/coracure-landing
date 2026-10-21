@@ -58,7 +58,9 @@ export default function Listing({ group, slug }) {
     key,
   )
   const data = r.data
-  const facets = data?.facets
+  // the Filters panel, button and drawer exist only when the API offered at least one option to filter by
+  const raw = data?.facets
+  const facets = raw && (raw.languages.length || raw.experience.length || raw.fee.length || (!slug && dir.specialties.length > 1 && raw.specialties.length > 1)) ? raw : undefined
 
   // mobile drawer edits a draft that Apply commits
   const [drawer, setDrawer] = useState(false)
@@ -100,7 +102,7 @@ export default function Listing({ group, slug }) {
   const showTools = Boolean(data)
 
   return (
-    <AreaPage bg="listing" title={heading}>
+    <AreaPage bg="listing" title={heading} back={slug ? [`/${group}`, `Back to ${dir.crumb.toLowerCase()}`] : ['/consultations', 'Back to consultations']}>
       <Breadcrumbs items={crumbs} />
       <PageHeading title={heading}>Explore online consultation providers in this {specialty ? 'specialty' : 'category'}.</PageHeading>
 
